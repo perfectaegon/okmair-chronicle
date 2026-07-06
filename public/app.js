@@ -70,7 +70,10 @@ function renderPhoto(post) {
   img.src = `/uploads/${post.filename}`;
   img.alt = post.title || post.caption || "Photograph";
 
-  node.querySelector(".photo-link").href = `/uploads/${post.filename}`;
+  const photoLink = node.querySelector(".photo-link");
+  photoLink.href = `/photo.html?id=${post.id}`;
+  photoLink.target = "_blank";
+  photoLink.rel = "noopener noreferrer";
   node.querySelector(".photo-title").textContent = post.title;
   node.querySelector(".photo-date").textContent = formatShortDate(post.published_at);
 
@@ -149,13 +152,7 @@ function renderPosts(posts) {
   contentColumns.classList.remove("hidden");
 
   setLeadStory(articles[0]);
-  articles.forEach((post, i) => {
-    if (i === 0 && activeFilter === "all") return;
-    renderArticle(post);
-  });
-  if (articles.length === 1 && activeFilter !== "all") {
-    renderArticle(articles[0]);
-  }
+  articles.forEach(renderArticle);
 
   photos.forEach(renderPhoto);
   videos.forEach(renderVideo);

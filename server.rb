@@ -594,12 +594,16 @@ server.mount_proc "/" do |req, res|
     serve_static(res, "index.html", "text/html; charset=utf-8")
   when "/post.html"
     serve_static(res, "post.html", "text/html; charset=utf-8")
+  when "/photo.html"
+    serve_static(res, "photo.html", "text/html; charset=utf-8")
   when "/styles.css"
     serve_static(res, "styles.css", "text/css; charset=utf-8")
   when "/app.js"
     serve_static(res, "app.js", "application/javascript; charset=utf-8")
   when "/post.js"
     serve_static(res, "post.js", "application/javascript; charset=utf-8")
+  when "/photo.js"
+    serve_static(res, "photo.js", "application/javascript; charset=utf-8")
   else
     res.status = 404
     res.body = "Not found"

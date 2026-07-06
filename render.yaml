@@ -3,10 +3,12 @@ services:
     name: perfectumair-chronicle
     runtime: ruby
     plan: free
-    buildCommand: echo "No build step"
-    startCommand: ruby server.rb
+    buildCommand: bundle install
+    startCommand: bundle exec ruby server.rb
     healthCheckPath: /
     envVars:
+      - key: HOST
+        value: "0.0.0.0"
       - key: ADMIN_PASSWORD
         generateValue: true
       - key: FORCE_SSL

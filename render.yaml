@@ -13,7 +13,3 @@ services:
         value: "1"
       - key: SESSION_HOURS
         value: "168"
-    disk:
-      name: chronicle-data
-      mountPath: /opt/render/project/src/data
-      sizeGB: 1

@@ -261,7 +261,8 @@ function renderArchiveItem(post) {
       loadArchive();
       setStatus(publishStatus, "Item removed.", "ok");
     } else {
-      setStatus(publishStatus, "Could not remove item", "err");
+      const data = await res.json().catch(() => ({}));
+      setStatus(publishStatus, data.error || "Could not remove item", "err");
     }
   });
 

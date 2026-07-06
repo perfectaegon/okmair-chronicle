@@ -414,6 +414,15 @@ def delete_post(post_id)
   true
 end
 
+def mount_any(server, path, &block)
+  servlet = Class.new(WEBrick::HTTPServlet::AbstractServlet) do
+    define_method(:service) do |req, res|
+      block.call(req, res)
+    end
+  end
+  server.mount(path, servlet)
+end
+
 server = WEBrick::HTTPServer.new(
   Port: PORT,
   BindAddress: HOST,
@@ -421,7 +430,7 @@ server = WEBrick::HTTPServer.new(
   Logger: WEBrick::Log.new($stderr, WEBrick::BasicLog::WARN)
 )
 
-server.mount_proc "/api/posts" do |req, res|
+mount_any(server, "/api/posts") do |req, res|
   path = req.path.to_s
   post_id = path.delete_prefix("/api/posts/").delete_prefix("/api/posts").split("/").reject(&:empty?).first
 
@@ -451,7 +460,7 @@ server.mount_proc "/api/posts" do |req, res|
   json_response(res, 405, { error: "Method not allowed" })
 end
 
-server.mount_proc "/admin/api/login" do |req, res|
+mount_any(server, "/admin/api/login") do |req, res|
   unless req.request_method == "POST"
     json_response(res, 405, { error: "Method not allowed" })
     next
@@ -470,7 +479,7 @@ server.mount_proc "/admin/api/login" do |req, res|
   json_response(res, 200, { ok: true })
 end
 
-server.mount_proc "/admin/api/logout" do |req, res|
+mount_any(server, "/admin/api/logout") do |req, res|
   unless req.request_method == "POST"
     json_response(res, 405, { error: "Method not allowed" })
     next
@@ -487,11 +496,11 @@ server.mount_proc "/admin/api/logout" do |req, res|
   json_response(res, 200, { ok: true })
 end
 
-server.mount_proc "/admin/api/session" do |req, res|
+mount_any(server, "/admin/api/session") do |req, res|
   json_response(res, 200, { authenticated: authenticated?(req) })
 end
 
-server.mount_proc "/admin/api/posts" do |req, res|
+mount_any(server, "/admin/api/posts") do |req, res|
   next unless require_admin!(req, res)
 
   path = req.path.to_s
@@ -519,7 +528,7 @@ server.mount_proc "/admin/api/posts" do |req, res|
   json_response(res, 405, { error: "Method not allowed" })
 end
 
-server.mount_proc "/admin/api/article" do |req, res|
+mount_any(server, "/admin/api/article") do |req, res|
   next unless require_admin!(req, res)
 
   unless req.request_method == "POST"
@@ -557,7 +566,7 @@ server.mount_proc "/admin/api/article" do |req, res|
   json_response(res, 201, { post: post })
 end
 
-server.mount_proc "/admin/api/upload" do |req, res|
+mount_any(server, "/admin/api/upload") do |req, res|
   next unless require_admin!(req, res)
 
   unless req.request_method == "POST"
@@ -609,7 +618,7 @@ server.mount_proc "/admin/api/upload" do |req, res|
   end
 end
 
-server.mount_proc "/uploads/" do |req, res|
+mount_any(server, "/uploads/") do |req, res|
   filename = sanitize_filename(req.path.to_s.delete_prefix("/uploads/"))
   path = File.join(UPLOAD_DIR, filename)
 
@@ -624,7 +633,7 @@ server.mount_proc "/uploads/" do |req, res|
   res.body = File.binread(path)
 end
 
-server.mount_proc "/admin" do |req, res|
+mount_any(server, "/admin") do |req, res|
   if req.path == "/admin" || req.path == "/admin/"
     serve_static(res, "admin.html", "text/html; charset=utf-8")
     next
@@ -642,7 +651,7 @@ server.mount_proc "/admin" do |req, res|
   end
 end
 
-server.mount_proc "/" do |req, res|
+mount_any(server, "/") do |req, res|
   case req.path
   when "/", "/index.html"
     serve_static(res, "index.html", "text/html; charset=utf-8")

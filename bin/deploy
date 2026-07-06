@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+export PATH="${HOME}/.local/bin:${PATH}"
+
+cd "$ROOT"
+
+if ! command -v gh >/dev/null 2>&1; then
+  echo "GitHub CLI not found. Install it from https://cli.github.com"
+  exit 1
+fi
+
+if ! gh auth status >/dev/null 2>&1; then
+  echo "Sign in to GitHub first:"
+  gh auth login --hostname github.com --git-protocol https --web --skip-ssh-key
+fi
+
+REPO_NAME="${1:-perfectumair-chronicle}"
+
+if ! git remote get-url origin >/dev/null 2>&1; then
+  gh repo create "$REPO_NAME" --public --source=. --remote=origin --push
+else
+  git push -u origin main
+fi
+
+USERNAME="$(gh api user -q .login)"
+DEPLOY_URL="https://render.com/deploy?repo=https://github.com/${USERNAME}/${REPO_NAME}"
+
+echo ""
+echo "Repository: https://github.com/${USERNAME}/${REPO_NAME}"
+echo ""
+echo "Deploy permanently on Render (free):"
+echo "  1. Open: ${DEPLOY_URL}"
+echo "  2. Click 'Apply' to create the service from render.yaml"
+echo "  3. Set a strong ADMIN_PASSWORD when prompted"
+echo "  4. Wait ~2 minutes for the deploy to finish"
+echo ""
+echo "Your site will be live at: https://${REPO_NAME}.onrender.com"
